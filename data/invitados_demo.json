@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Ana Torres",
+    "relation": "compañera de universidad",
+    "description": "Ana investiga energías renovables y disfruta hablando de astronomía.",
+    "email": "ana.torres@example.com"
+  },
+  {
+    "name": "Luis Moreno",
+    "relation": "amigo de la familia",
+    "description": "Luis es cocinero y prepara platos vegetarianos.",
+    "email": "luis.moreno@example.com"
+  },
+  {
+    "name": "Marta Ríos",
+    "relation": "colega de trabajo",
+    "description": "Marta organiza eventos culturales y colecciona libros antiguos.",
+    "email": "marta.rios@example.com"
+  }
+]
