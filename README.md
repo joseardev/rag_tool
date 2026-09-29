@@ -1,40 +1,55 @@
-# RAG Tool: aprendiendo RAG agéntico paso a paso
+# RAG de incidencias logísticas
 
-Proyecto propio inspirado en la [unidad 3 del curso de agentes de Hugging Face](https://huggingface.co/learn/agents-course/unit3/agentic-rag/invitees). El objetivo es construir una herramienta que busque información verificable sobre invitados y, después, permitir que un agente decida cuándo usarla.
+Proyecto didáctico inspirado en la [unidad 3 del curso de agentes de Hugging Face](https://huggingface.co/learn/agents-course/unit3/agentic-rag/invitees). Usa cinco incidencias de ejemplo para comparar búsqueda por palabras, búsqueda semántica y búsqueda híbrida. Los datos son ficticios y siguen los casos A–E del ejemplo.
 
-## Paso 1: recuperación
+## 1. Buscar por palabras (BM25)
 
-`retriever.py` convierte cada registro en texto y crea un índice BM25. Ante una pregunta, devuelve los registros con términos relevantes y su puntuación. Esta primera versión permite observar la recuperación por separado, antes de conectar un modelo. Los tres invitados de `data/invitados_demo.json` son **ficticios** y sus correos son de ejemplo.
+Necesitas Python 3.10 o posterior. Crea un entorno virtual e instala las dependencias una vez:
 
-Necesitas Python 3.10 o posterior. Desde esta carpeta:
-
-```bash
-python retriever.py "Marta Rios"
-python retriever.py "platos vegetarianos"
-python -m unittest discover -s tests
-```
-
-Para usar los datos del curso en lugar de los ficticios:
-
-```bash
+```powershell
 python -m venv .venv
-# Activa el entorno virtual de tu sistema e instala las dependencias:
-python -m pip install -r requirements.txt
-python retriever.py "Ada Lovelace" --source huggingface
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-La primera consulta al conjunto de Hugging Face necesita conexión para descargarlo. Las consultas de demostración funcionan sin conexión ni token.
+En PowerShell, desde esta carpeta, usa el Python del entorno:
 
-## Qué observar
+```powershell
+.\.venv\Scripts\python.exe retriever.py "material llegando tarde a línea" --mode bm25
+.\.venv\Scripts\python.exe retriever.py "retraso entrega" --mode bm25 --tipo transporte
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
 
-1. Una búsqueda por nombre encuentra el registro, incluso sin escribir tildes.
-2. Una búsqueda por descripción puede encontrar a alguien sin mencionar su nombre.
-3. Un término ausente devuelve «No hay coincidencias».
+BM25 puntúa las palabras compartidas. Se eliminan artículos y preposiciones frecuentes y se ignoran tildes. Con la primera consulta, aquí devuelve B, E y C: E comparte «material» aunque trata de otro problema, y D queda fuera.
 
-BM25 compara palabras, no significados. Más adelante podremos contrastarlo con búsqueda semántica y conectar el recuperador a un agente.
+## 2. Buscar por significado (embeddings)
 
-## Próximos pasos
+Ejecuta:
 
-1. Convertir la búsqueda en una herramienta con una entrada y salida claras.
-2. Dar la herramienta al agente y observar cuándo la llama.
-3. Evaluar respuestas contra los registros y añadir fuentes.
+```powershell
+.\.venv\Scripts\python.exe retriever.py "material llegando tarde a línea" --mode semantic
+```
+
+Se usa el modelo multilingüe [`paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2). La primera ejecución descarga el modelo; después calcula similitud coseno entre la pregunta y cada incidencia. En la prueba de este proyecto, los tres primeros fueron B (0,418), D (0,401) y C (0,383). Los valores pueden variar con la versión del modelo. Un score alto significa similitud textual, no confirma que la causa sea la misma.
+
+## 3. Filtrar y combinar
+
+```powershell
+.\.venv\Scripts\python.exe retriever.py "material llegando tarde a línea" --mode hybrid --tipo transporte
+.\.venv\Scripts\python.exe retriever.py "problemas con la referencia" --mode hybrid --referencia 8V0123456
+```
+
+El filtro de metadatos se aplica **antes** de buscar. En la primera consulta filtrada aparecen A y D. `hybrid` combina las posiciones de BM25 y embeddings con Reciprocal Rank Fusion (RRF), porque sus scores tienen escalas distintas. El score híbrido ya no es una similitud coseno. También se puede filtrar por `--zona` y `--causa`.
+
+La salida muestra el ID y el texto de origen de cada resultado. La búsqueda no genera respuestas ni inventa acciones correctivas. Para responder qué medidas funcionaron necesitaremos datos reales con un campo de acciones y resultados.
+
+Esta demostración recalcula los embeddings al buscar. Con miles de incidencias habrá que guardarlos en un índice para no repetir ese trabajo. El reranker y la generación de respuestas quedan para etapas posteriores.
+
+## Estructura
+
+- `data/incidencias_demo.json`: casos A–E, con tipo, zona, causa y referencia.
+- `retriever.py`: carga, filtros, BM25, embeddings y fusión.
+- `tests/test_retriever.py`: comprueba búsqueda y filtros sin descargar el modelo.
+
+## Siguiente paso
+
+Probar preguntas reales, revisar falsos positivos y decidir qué metadatos son fiables. Después añadiremos una herramienta que devuelva los resultados al agente con sus IDs como citas.
