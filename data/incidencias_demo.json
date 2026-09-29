@@ -1,0 +1,7 @@
+[
+  {"id": "A", "texto": "Retraso en la entrega del contenedor KLT de referencia 8V0123456 a la línea 4 por falta de tractor logístico.", "tipo": "transporte", "zona": "linea_4", "causa": "falta_tractor", "referencia": "8V0123456"},
+  {"id": "B", "texto": "Falta de suministro de material en línea 4 debido a saturación del circuito de milk-run.", "tipo": "abastecimiento", "zona": "linea_4", "causa": "saturacion_milkrun", "referencia": null},
+  {"id": "C", "texto": "Parada de línea por ausencia de piezas de la referencia 8V0123456.", "tipo": "stock", "zona": "linea_4", "causa": "falta_piezas", "referencia": "8V0123456"},
+  {"id": "D", "texto": "Retraso de 18 minutos en la entrega de secuenciado debido a avería del tren logístico.", "tipo": "transporte", "zona": "secuenciado", "causa": "averia_tren", "referencia": null},
+  {"id": "E", "texto": "Error de preparación de material en almacén. Se cargó una referencia incorrecta en el carro.", "tipo": "preparacion", "zona": "almacen", "causa": "referencia_incorrecta", "referencia": null}
+]
